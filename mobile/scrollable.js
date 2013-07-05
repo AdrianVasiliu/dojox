@@ -61,17 +61,17 @@ define([
 	};
 
 	lang.extend(Scrollable, {
-		// fixedHeaderHeight: Number
+		// _fixedHeaderHeight: Number
 		//		height of a fixed header
-		fixedHeaderHeight: 0,
+		_fixedHeaderHeight: 0,
 
-		// fixedFooterHeight: Number
+		// _fixedFooterHeight: Number
 		//		height of a fixed footer
-		fixedFooterHeight: 0,
+		_fixedFooterHeight: 0,
 
-		// isLocalFooter: Boolean
-		//		footer is view-local (as opposed to application-wide)
-		isLocalFooter: false,
+		// _hasLocalFooter: Boolean
+		//		Whether there is a header and/or a footer.
+		_hasLocalFooter: false,
 
 		// scrollBar: Boolean
 		//		show scroll bar or not
@@ -115,12 +115,24 @@ define([
 		//		explicitly specified height of this widget (ex. "300px")
 		height: "",
 
+		/* In Dojo 1.9:
 		// scrollType: Number
 		//		- 1: use -webkit-transform:translate3d(x,y,z) style, use -webkit-animation for slide anim
 		//		- 2: use top/left style,
 		//		- 3: use -webkit-transform:translate3d(x,y,z) style, use -webkit-transition for slide anim
 		//		- 0: use default value (2 in case of Android < 3, 3 if iOS6, otherwise 1)
-		scrollType: 0,
+		// scrollType: 0,
+		*/
+		
+		// scrollType: Number
+		//		- "translate3dAnimation": use -webkit-transform:translate3d(x,y,z) style and
+		//			use -webkit-animation for slide animation.
+		//		- "translate3dTransition": use -webkit-transform:translate3d(x,y,z) style and
+		//			use -webkit-transition for slide anim
+		//		- "topLeft": use top/left style,
+		//		- "overflowScroll": use native CSS scrolling, 
+		//		- "default": use default value (per platform; TBD to be determined)
+		scrollType: "overflowScroll", // "default", // for now native scroll everywhere
 		
 		// for Tooltip.js
 		_parentPadBorderExtentsBottom: 0,
@@ -151,16 +163,19 @@ define([
 			this._f = (this.scrollDir == "f"); // flipping views
 
 			this._ch = []; // connect handlers
-			this._ch.push(connect.connect(this.touchNode, touch.press, this, "onTouchStart"));
+			if(this.scrollType !== "overflowScroll"){ // "native" scroll mode 
+				this._ch.push(connect.connect(this.touchNode, touch.press, this, "onTouchStart"));
+			}
 			if(has("css3-animations")){
 				// flag for whether to use -webkit-transform:translate3d(x,y,z) or top/left style.
 				// top/left style works fine as a workaround for input fields auto-scrolling issue,
 				// so use top/left in case of Android by default.
-				this._useTopLeft = this.scrollType ? this.scrollType === 2 : has('android') < 3;
+				this._useTopLeft = this.scrollType ? this.scrollType === "topLeft" : has('android') < 3;
 				// Flag for using webkit transition on transform, instead of animation + keyframes.
 				// (keyframes create a slight delay before the slide animation...)
 				if(!this._useTopLeft){
-					this._useTransformTransition = this.scrollType ? this.scrollType === 3 : has("ios") >= 6;
+					this._useTransformTransition = this.scrollType !== "default" ? 
+						this.scrollType === "translate3dTransition" : has("ios") >= 6;
 				}
 				if(!this._useTopLeft){
 					if(this._useTransformTransition){
@@ -187,24 +202,25 @@ define([
 			}
 
 			this._speed = {x:0, y:0};
-			this._appFooterHeight = 0;
 			if(this.isTopLevel() && !this.noResize){
 				this.resize();
 			}
 			var _this = this;
-			setTimeout(function(){ 
-				// Why not using widget.defer() instead of setTimeout()? Because this module
-				// is not always mixed into a widget (ex. dojox/mobile/_ComboBoxMenu), and adding 
-				// a check to call either defer or setTimeout has been considered overkill.
-				_this.flashScrollBar();
-			}, 600);
+			if(this.scrollType !== "overflowScroll"){
+				setTimeout(function(){ 
+					// Why not using widget.defer() instead of setTimeout()? Because this module
+					// is not always mixed into a widget (ex. dojox/mobile/_ComboBoxMenu), and adding 
+					// a check to call either defer or setTimeout has been considered overkill.
+					_this.flashScrollBar();
+				}, 600);
+			}
 			
 			// #16363: while navigating among input field using TAB (desktop keyboard) or 
 			// NEXT (mobile soft keyboard), domNode.scrollTop gets modified (this holds even 
 			// if the text widget has selectOnFocus at false, that is even if dijit's _FormWidgetMixin._onFocus 
 			// does not trigger a global scrollIntoView). This messes up ScrollableView's own 
 			// scrolling machinery. To avoid this misbehavior:
-			if(win.global.addEventListener){ // all supported browsers but IE8
+			if(win.global.addEventListener && this.scrollType !== "overflowScroll"){ // all supported browsers but IE8
 				// (for IE8, using attachEvent is not a solution, because it only works in bubbling phase)
 				this._onScroll = function(e){
 					if(!_this.domNode || _this.domNode.style.display === 'none'){ return; }
@@ -235,12 +251,12 @@ define([
 							// larger than the height of scrollable's content display
 							// area (it would be ergonomically harmful).
 							
-							if(nodeRect.top < (scrollableRect.top + _this.fixedHeaderHeight)){
+							if(nodeRect.top < (scrollableRect.top + _this._fixedHeaderHeight)){
 								// scrolling towards top (to bring into the visible area an element
 								// located above it).
 								_this.scrollIntoView(node, true);
 							}else if((nodeRect.top + nodeRect.height) > 
-								(scrollableRect.top + scrollableRect.height - _this.fixedFooterHeight)){
+								(scrollableRect.top + scrollableRect.height - _this._fixedFooterHeight)){
 								// scrolling towards bottom (to bring into the visible area an element
 								// located below it).
 								_this.scrollIntoView(node, false);
@@ -321,12 +337,13 @@ define([
 			//		current top position of the widget to the bottom of the screen
 			//		will be the new height.
 
+console.log("scrollable.resize");
 			// moved from init() to support dynamically added fixed bars
+			/* Now in FixedBarMixin.resize().
 			this._appFooterHeight = (this._fixedAppFooter) ? this._fixedAppFooter.offsetHeight : 0;
 			if(this.isLocalHeader){
-				this.containerNode.style.marginTop = this.fixedHeaderHeight + "px";
+				this.containerNode.style.marginTop = this._fixedHeaderHeight + "px";
 			}
-
 			// Get the top position. Same as dojo.position(node, true).y
 			var top = 0;
 			for(var n = this.domNode; n && n.tagName != "BODY"; n = n.offsetParent){
@@ -369,8 +386,8 @@ define([
 				h !== "default"){
 				this.domNode.style.height = h;
 			}
-
-			if(!this._conn){
+*/
+			if(!this._conn && this.scrollType !== "overflowScroll"){
 				// to ensure that the view is within a scrolling area when resized.
 				this.onTouchEnd();
 			}
@@ -1008,13 +1025,13 @@ define([
 			d.c = {h:this.containerNode.offsetHeight, w:this.containerNode.offsetWidth};
 
 			// view width/height
-			d.v = {h:this.domNode.offsetHeight + this._appFooterHeight, w:this.domNode.offsetWidth};
+			d.v = {h:this.domNode.offsetHeight + this._parentViewFooterHeight, w:this.domNode.offsetWidth};
 
 			// display width/height
-			d.d = {h:d.v.h - this.fixedHeaderHeight - this.fixedFooterHeight - this._appFooterHeight, w:d.v.w};
+			d.d = {h:d.v.h - this._fixedHeaderHeight - this._fixedFooterHeight - this._parentViewFooterHeight, w:d.v.w};
 
 			// overflowed width/height
-			d.o = {h:d.c.h - d.v.h + this.fixedHeaderHeight + this.fixedFooterHeight + this._appFooterHeight, w:d.c.w - d.v.w};
+			d.o = {h:d.c.h - d.v.h + this._fixedHeaderHeight + this._fixedFooterHeight + this._parentViewFooterHeight, w:d.c.w - d.v.w};
 			return d;
 		},
 
@@ -1042,7 +1059,7 @@ define([
 						props.right = "2px";
 						props.width = "5px";
 					}else{
-						props.bottom = (self.isLocalFooter ? self.fixedFooterHeight : 0) + 2 + "px";
+						props.bottom = (self._hasLocalFooter ? self._fixedFooterHeight : 0) + 2 + "px";
 						props.height = "5px";
 					}
 					domStyle.set(wrapper, props);
@@ -1322,7 +1339,7 @@ define([
 				domStyle.set(bar, {"opacity": 0.6});
 			};
 			var dim = this.getDim();
-			f(this._scrollBarWrapperV, this._scrollBarV, dim.d.h, dim.c.h, this.fixedHeaderHeight, true);
+			f(this._scrollBarWrapperV, this._scrollBarV, dim.d.h, dim.c.h, this._fixedHeaderHeight, true);
 			f(this._scrollBarWrapperH, this._scrollBarH, dim.d.w, dim.c.w, 0);
 			this.createMask();
 		},

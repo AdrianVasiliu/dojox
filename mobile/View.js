@@ -20,15 +20,19 @@ define([
 	"./common",
 	"./transition",
 	"./viewRegistry",
-	"./_css3"
-], function(array, config, connect, declare, lang, has, win, Deferred, dom, domClass, domConstruct, domGeometry, domStyle, registry, Contained, Container, WidgetBase, ViewController, common, transitDeferred, viewRegistry, css3){
+	"./_css3",
+	"./FixedBarMixin"
+], function(array, config, connect, declare, lang, has, win, Deferred, dom, 
+	domClass, domConstruct, domGeometry, domStyle, registry, Contained, 
+	Container, WidgetBase, ViewController, common, transitDeferred, viewRegistry,
+	css3, FixedBarMixin){
 
 	// module:
 	//		dojox/mobile/View
 
 	var dm = lang.getObject("dojox.mobile", true);
 
-	return declare("dojox.mobile.View", [WidgetBase, Container, Contained], {
+	return declare("dojox.mobile.View", [WidgetBase, Container, Contained, FixedBarMixin], {
 		// summary:
 		//		A container widget for any HTML element and/or Dojo widgets
 		// description:
@@ -154,9 +158,16 @@ define([
 		resize: function(){
 			// summary:
 			//		Calls resize() of each child widget.
+			console.log("View.resize on " + this.id);
+			
+			// Resize the children first
 			array.forEach(this.getChildren(), function(child){
-				if(child.resize){ child.resize(); }
+				if(child.resize){ 
+					child.resize(); 
+				}
 			});
+			
+			this.inherited(arguments); // calls FixedBarMixin.resize()
 		},
 
 		onStartView: function(){
@@ -165,7 +176,7 @@ define([
 			// description:
 			//		Called only when this view is shown at startup time.
 		},
-
+		
 		onBeforeTransitionIn: function(moveTo, dir, transition, context, method){
 			// summary:
 			//		Stub function to connect to from your application.
@@ -409,12 +420,13 @@ define([
 
 		_addTransitionPaddingTop: function(/*String|Integer*/ value){
 			// add padding top to the view in order to get alignment during the transition
+			this._storedPaddingTop = this.containerNode.style.paddingTop;
 			this.containerNode.style.paddingTop = value + "px";
 		},
 
 		_removeTransitionPaddingTop: function(){
-			// remove padding top from the view after the transition
-			this.containerNode.style.paddingTop = "";
+			// restore the initial padding top after the transition
+			this.containerNode.style.paddingTop = this._storedPaddingTop;
 		},
 
 		_toCls: function(s){

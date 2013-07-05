@@ -3,10 +3,12 @@ define([
 	"dojo/_base/declare",
 	"dojo/dom-class",
 	"dojo/dom-construct",
+	"dojo/dom-style",
+	"dojo/sniff",
 	"dijit/registry",	// registry.byNode
 	"./View",
 	"./_ScrollableMixin"
-], function(array, declare, domClass, domConstruct, registry, View, ScrollableMixin){
+], function(array, declare, domClass, domConstruct, domStyle, has, registry, View, ScrollableMixin){
 
 	// module:
 	//		dojox/mobile/ScrollableView
@@ -36,93 +38,54 @@ define([
 		constructor: function(){
 			// summary:
 			//		Creates a new instance of the class.
-			this.scrollableParams = {noResize: true};
+			this.scrollableParams = {noResize: true};			
 		},
 
 		buildRendering: function(){
 			this.inherited(arguments);
+			console.log("ScrollableView.buildRendering");
 			domClass.add(this.domNode, "mblScrollableView");
 			this.domNode.style.overflow = "hidden";
-			this.domNode.style.top = "0px";
-			this.containerNode = domConstruct.create("div",
-				{className:"mblScrollableViewContainer"}, this.domNode);
-			this.containerNode.style.position = "absolute";
-			this.containerNode.style.top = "0px"; // view bar is relative
 			if(this.scrollDir === "v"){
 				this.containerNode.style.width = "100%";
+			}
+			if(this.scrollType === "overflowScroll"){
+				if(has("webkit")){ // request hardware acceleration
+					domStyle.set(this.containerNode, "webkitTransform", "translate3d(0,0,0)");
+				}
+				if(this.scrollDir.indexOf("v") != -1){
+					domStyle.set(this.containerNode, "overflowY", "scroll"); // or "auto"...
+				}
+				if(this.scrollDir.indexOf("h") != -1){
+					domStyle.set(this.containerNode, "overflowX", "scroll"); // or "auto"...
+				}
+				domStyle.set(this.containerNode, 
+					{"webkitTransform": "translate3d(0,0,0)",
+					"webkitOverflowScrolling": "touch", // currently only for iOS; used to have bad effect on iOS5; fixed in iOS6.
+					"webkitTransformStyle": "preserve-3d"});
 			}
 		},
 
 		startup: function(){
 			if(this._started){ return; }
-			// user can initialize the app footers using a value for fixedFooter (we keep this value for non regression of existing apps)
-			if(this.fixedFooter && !this.isLocalFooter){
-				this._fixedAppFooter = this.fixedFooter;
-				this.fixedFooter = "";
-			}
-			this.reparent();
 			this.inherited(arguments);
 		},
 
 		resize: function(){
 			// summary:
 			//		Calls resize() of each child widget.
+			
+			console.log("ScrollableView.resize on " + this.id);
 			this.inherited(arguments); // scrollable#resize() will be called
+			/* Now in the parent FixedBarMixin
 			array.forEach(this.getChildren(), function(child){
 				if(child.resize){ child.resize(); }
 			});
+			*/
 			this._dim = this.getDim(); // update dimension cache
 			if(this._conn){
 				// if a resize happens during a scroll, update the scrollbar
 				this.resetScrollBar();
-			}
-		},
-
-		isTopLevel: function(/*Event*/e){
-			// summary:
-			//		Returns true if this is a top-level widget.
-			//		Overrides dojox/mobile/scrollable.isTopLevel.
-			var parent = this.getParent && this.getParent();
-			return (!parent || !parent.resize); // top level widget
-		},
-
-		addFixedBar: function(/*Widget*/widget){
-			// summary:
-			//		Adds a view local fixed bar to this widget.
-			// description:
-			//		This method can be used to programmatically add a view local
-			//		fixed bar to ScrollableView. The bar is appended to this
-			//		widget's domNode. The addChild API cannot be used for this
-			//		purpose, because it adds the given widget to containerNode.
-			var c = widget.domNode;
-			var fixed = this.checkFixedBar(c, true);
-			if(!fixed){ return; }
-			// Fixed bar has to be added to domNode, not containerNode.
-			this.domNode.appendChild(c);
-			if(fixed === "top"){
-				this.fixedHeaderHeight = c.offsetHeight;
-				this.isLocalHeader = true;
-			}else if(fixed === "bottom"){
-				this.fixedFooterHeight = c.offsetHeight;
-				this.isLocalFooter = true;
-				c.style.bottom = "0px";
-			}
-			this.resize();
-		},
-
-		reparent: function(){
-			// summary:
-			//		Moves all the children, except header and footer, to
-			//		containerNode.
-			var i, idx, len, c;
-			for(i = 0, idx = 0, len = this.domNode.childNodes.length; i < len; i++){
-				c = this.domNode.childNodes[idx];
-				// search for view-specific header or footer
-				if(c === this.containerNode || this.checkFixedBar(c, true)){
-					idx++;
-					continue;
-				}
-				this.containerNode.appendChild(this.domNode.removeChild(c));
 			}
 		},
 

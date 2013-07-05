@@ -200,7 +200,10 @@ define([
 			resizeRecursively(root);
 		}else{
 			array.forEach(array.filter(registry.toArray(), isTopLevel),
-					function(w){ w.resize(); });
+				function(w){ 
+					console.log("common calls resize on " + w.id);
+					w.resize(); 
+			});
 		}
 		connect.publish("/dojox/mobile/afterResizeAll", [evt, root]);
 	};

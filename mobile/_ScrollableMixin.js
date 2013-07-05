@@ -16,16 +16,6 @@ define([
 		// summary:
 		//		Mixin for widgets to have a touch scrolling capability.
 	
-		// fixedHeader: String
-		//		Id of the fixed header.
-		fixedHeader: "",
-
-		// fixedFooter: String
-		//		Id of the fixed footer.
-		fixedFooter: "",
-
-		_fixedAppFooter: "",
-
 		// scrollableParams: Object
 		//		Parameters for dojox/mobile/scrollable.init().
 		scrollableParams: null,
@@ -33,10 +23,6 @@ define([
 		// allowNestedScrolls: Boolean
 		//		Flag to allow scrolling in nested containers, e.g. to allow ScrollableView in a SwapView.
 		allowNestedScrolls: true,
-
-		// appBars: Boolean
-		//		Enables the search for application-specific bars (header or footer).
-		appBars: true, 
 
 		constructor: function(){
 			// summary:
@@ -53,27 +39,9 @@ define([
 
 		startup: function(){
 			if(this._started){ return; }
-			if(this._fixedAppFooter){
-				this._fixedAppFooter = dom.byId(this._fixedAppFooter);
-			}
-			this.findAppBars();
-			var node, params = this.scrollableParams;
-			if(this.fixedHeader){
-				node = dom.byId(this.fixedHeader);
-				if(node.parentNode == this.domNode){ // local footer
-					this.isLocalHeader = true;
-				}
-				params.fixedHeaderHeight = node.offsetHeight;
-			}
-			if(this.fixedFooter){
-				node = dom.byId(this.fixedFooter);
-				if(node.parentNode == this.domNode){ // local footer
-					this.isLocalFooter = true;
-					node.style.bottom = "0px";
-				}
-				params.fixedFooterHeight = node.offsetHeight;
-			}
-			this.scrollType = this.scrollType || config["mblScrollableScrollType"] || 0;
+			var params = this.scrollableParams;
+			// CHECKME do we still want to support the config flag?
+			// this.scrollType = this.scrollType || config["mblScrollableScrollType"] || 0;
 			this.init(params);
 			if(this.allowNestedScrolls){
 				for(var p = this.getParent(); p; p = p.getParent()){
@@ -95,50 +63,10 @@ define([
 			});
 			this.inherited(arguments);
 		},
-
-		findAppBars: function(){
-			// summary:
-			//		Search for application-specific header or footer.
-			if(!this.appBars){ return; }
-			var i, len, c;
-			for(i = 0, len = win.body().childNodes.length; i < len; i++){
-				c = win.body().childNodes[i];
-				this.checkFixedBar(c, false);
-			}
-			if(this.domNode.parentNode){
-				for(i = 0, len = this.domNode.parentNode.childNodes.length; i < len; i++){
-					c = this.domNode.parentNode.childNodes[i];
-					this.checkFixedBar(c, false);
-				}
-			}
-			this.fixedFooterHeight = this.fixedFooter ? this.fixedFooter.offsetHeight : 0;
-		},
-
-		checkFixedBar: function(/*DomNode*/node, /*Boolean*/local){
-			// summary:
-			//		Checks if the given node is a fixed bar or not.
-			if(node.nodeType === 1){
-				var fixed = node.getAttribute("fixed") // TODO: Remove the non-HTML5-compliant attribute in 2.0
-					|| node.getAttribute("data-mobile-fixed")
-					|| (registry.byNode(node) && registry.byNode(node).fixed);
-				if(fixed === "top"){
-					domClass.add(node, "mblFixedHeaderBar");
-					if(local){
-						node.style.top = "0px";
-						this.fixedHeader = node;
-					}
-					return fixed;
-				}else if(fixed === "bottom"){
-					domClass.add(node, "mblFixedBottomBar");
-					if(local){
-						this.fixedFooter = node;
-					}else{
-						this._fixedAppFooter = node;
-					}
-					return fixed;
-				}
-			}
-			return null;
+		
+		resize: function(){
+			console.log("_ScrollableMixin.resize");
+			this.inherited(arguments);
 		}
 	});
 	return cls;

@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta http-equiv="Content-type" content="text/html; charset=utf-8"/>
+	<meta name="viewport"
+		  content="width=device-width,initial-scale=1,maximum-scale=1,minimum-scale=1,user-scalable=no"/>
+	<meta name="apple-mobile-web-app-capable" content="yes"/>
+	<title>ScrollableView demo</title>
+
+	<script type="text/javascript" src="../../deviceTheme.js"></script>
+	<script type="text/javascript" src="../../../../dojo/dojo.js"
+		data-dojo-config="async: true, parseOnLoad: true, mblHideAddressBar: false"></script>
+
+	<script type="text/javascript">
+		require([
+			"dojo/ready",
+			"dijit/registry",
+			"dojox/mobile/ListItem",
+			"dojox/mobile/parser",
+			"dojox/mobile",
+			"dojox/mobile/compat",
+			"dojox/mobile/ScrollableView",
+			"dojox/mobile/TabBar"
+		], function(ready, registry, ListItem){
+			/*
+			ready(function(){
+				var w = registry.byId("categ1");
+				for(var i = 1; i <= 300; i++){
+					var item = new ListItem({label:"Category "+i, variableHeight: true});
+					w.addChild(item);
+				}
+			});
+			*/
+		});
+	</script>
+
+	<style>
+		html,body{
+			height: 100%;
+		}
+	</style>
+</head>
+<body style="visibility:hidden;">
+<div id="topLevelView" data-dojo-type="dojox/mobile/View">
+	<h1 id="topLevelHeader" data-dojo-type="dojox/mobile/Heading" 
+		data-dojo-props="fixed: 'top'">Header (top-level)</h1>
+	
+	<div id="view1" data-dojo-type="dojox/mobile/View">
+		<h1 data-dojo-type="dojox/mobile/Heading" data-dojo-props="fixed: 'top'">Header (view1)</h1>
+		<h1 data-dojo-type="dojox/mobile/Heading" data-dojo-props="fixed: 'bottom'">Footer (view1)</h1>
+		
+		<div id="view11" data-dojo-type="dojox/mobile/ScrollableView">
+			<h1 data-dojo-type="dojox/mobile/Heading" data-dojo-props="fixed: 'top'">Header (scrollableView11)</h1>
+			<h1 data-dojo-type="dojox/mobile/Heading" data-dojo-props="fixed: 'bottom'">Footer (scrollableView11)</h1>
+		
+		<ul data-dojo-type="dojox/mobile/EdgeToEdgeList" class="list1">
+			<li data-dojo-type="dojox/mobile/ListItem" data-dojo-props='variableHeight:true' style="font-size:10px">
+			<table>
+				<tbody>
+				<tr>
+					<td>
+						<img alt="" src="../images/icon-1.png">
+					</td>
+					<td>
+						<a class="lnk" href="#">Dojo: Traditional Karate-do Spirit</a><br>
+						Sarah Connor Hardcover<br>
+						Eligible for FREE Super Saver Shipping
+					</td>
+				</tr>
+				</tbody>
+			</table>
+		</li>
+		<li data-dojo-type="dojox/mobile/ListItem" data-dojo-props='variableHeight:true' style="font-size:10px">
+			<table>
+				<tbody>
+				<tr>
+					<td>
+						<img alt="" src="../images/icon-1.png">
+					</td>
+					<td>
+						<a class="lnk" href="#">Japanese Martial Arts Dojo</a><br>
+						Martin Parker Hardcover<br>
+						Eligible for FREE Super Saver Shipping<br>
+					</td>
+				</tr>
+				</tbody>
+			</table>
+		</li>
+		<li data-dojo-type="dojox/mobile/ListItem" data-dojo-props='variableHeight:true' style="font-size:10px">
+			<table>
+				<tbody>
+				<tr>
+					<td>
+						<img alt="" src="../images/icon-1.png">
+					</td>
+					<td>
+						<a class="lnk" href="#">Total Solar Eclipse</a><br>
+						Steven Young Hardcover<br>
+						Eligible for FREE Super Saver Shipping<br>
+					</td>
+				</tr>
+				</tbody>
+			</table>
+		</li>
+		<li data-dojo-type="dojox/mobile/ListItem" data-dojo-props='variableHeight:true' style="font-size:10px">
+			<table>
+				<tbody>
+				<tr>
+					<td>
+						<img alt="" src="../images/icon-1.png">
+					</td>
+					<td>
+						<a class="lnk" href="#">The History of Java Coffee</a><br>
+						Marco Rodriguez Hardcover<br>
+						Eligible for FREE Super Saver Shipping<br>
+					</td>
+				</tr>
+				</tbody>
+			</table>
+		</li>
+		<li data-dojo-type="dojox/mobile/ListItem" data-dojo-props='variableHeight:true' style="font-size:10px">
+			<table>
+				<tbody>
+				<tr>
+					<td>
+						<img alt="" src="../images/icon-1.png">
+					</td>
+					<td>
+						<a class="lnk" href="#">The Principles of Spider's Web</a><br>
+						Melissa Morgan Hardcover<br>
+						Eligible for FREE Super Saver Shipping<br>
+					</td>
+				</tr>
+				</tbody>
+			</table>
+		</li>
+		</ul>
+		</div>
+	</div>
+	
+	<h1 data-dojo-type="dojox/mobile/Heading" data-dojo-props="fixed: 'bottom'">Footer (top-level)</h1>
+</div>
+</body>
+</html>
