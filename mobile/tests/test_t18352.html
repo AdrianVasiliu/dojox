@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta http-equiv="Content-type" content="text/html; charset=utf-8"/>
+	<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,minimum-scale=1,user-scalable=no"/>
+	<meta name="apple-mobile-web-app-capable" content="yes"/>
+	<title>Test 18352</title>
+
+	<script type="text/javascript" src="../deviceTheme.js"></script>
+	<script type="text/javascript" src="../../../dojo/dojo.js" 
+		data-dojo-config="async: true, parseOnLoad: true"></script>
+
+	<script type="text/javascript">
+		require(["dojox/mobile/parser", "dojox/mobile", 
+			"dojox/mobile/CheckBox", "dojox/mobile/RadioButton"],
+			function (parser) {
+			});
+	</script>
+	
+</head>
+<body>
+	<br/><br/><br/><br/><br/><br/>
+	Touching the input below should popup the keyboard on mobile:
+	<input type="text" value="Touch here">
+	<br/><br/>
+	<input type="checkbox" id="test"/><label for="test">Naked HTML checkbox</label>
+	<br/><br/><br/>
+	<table >
+		<tr>
+			<td><span class="bold">dojox/mobile/CheckBox</span></td>
+			<td style="text-align:right"><label for="cbox">Click me</label>
+				<input type="checkbox" id="cbox" data-dojo-type="dojox/mobile/CheckBox"></td>
+		</tr>
+	</table>
+	
+	<table>
+		<tr>
+			<td><span class="bold">Radio Button (native)</span></td>
+			<td style="text-align:right"><input type="radio" id="rb1Native" name="mobileRadioNative" 
+					value="Large" checked><label for="rb1Native">1</label>
+				<input type="radio" id="rb2Native" name="mobileRadioNative" value="Medium"><label for="rb2Native">2</label>
+				<input type="radio" id="rb3Native" name="mobileRadioNative" value="Small"><label for="rb3Native">3</label>
+			</td>
+		</tr>
+	</table>
+	
+	<table>
+		<tr>
+			<td><span class="bold">Radio Button (dojox/mobile)</span></td>
+			<td style="text-align:right"><input type="radio" id="rb1" data-dojo-type="dojox/mobile/RadioButton" name="mobileRadio" value="Large" checked><label for="rb1">1</label>
+				<input type="radio" id="rb2" data-dojo-type="dojox/mobile/RadioButton" name="mobileRadio" value="Medium"><label for="rb2">2</label>
+				<input type="radio" id="rb3" data-dojo-type="dojox/mobile/RadioButton" name="mobileRadio" value="Small"><label for="rb3">3</label>
+			</td>
+		</tr>
+	</table>
+</body>
+</html>
